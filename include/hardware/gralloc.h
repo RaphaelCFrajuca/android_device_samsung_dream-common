@@ -120,6 +120,8 @@ enum {
     GRALLOC_USAGE_HW_CAMERA_ZSL         = 0x00060000,
     /* mask for the camera access values */
     GRALLOC_USAGE_HW_CAMERA_MASK        = 0x00060000,
+    /* buffer will be used by the HW IPs when sysmmu is off */
+    GRALLOC_USAGE_PHYSICALLY_LINEAR     = 0x01000000,
     /* mask for the software usage bit-mask */
     GRALLOC_USAGE_HW_MASK               = 0x00079F00,
 
@@ -144,6 +146,13 @@ enum {
     GRALLOC_USAGE_PRIVATE_3             = 0x80000000,
     GRALLOC_USAGE_PRIVATE_MASK          = 0xF0000000,
 
+    GRALLOC_USAGE_INTERNAL_ONLY         = 0x10000000,
+    GRALLOC_USAGE_EXTERNAL_FLEXIBLE     = 0x20000000,
+    GRALLOC_USAGE_EXTERNAL_BLOCK        = 0x40000000,
+    GRALLOC_USAGE_EXTERNAL_ONLY         = 0x80000000,
+    GRALLOC_USAGE_EXTERNAL_VIRTUALFB    = 0x00400000,
+    GRALLOC_USAGE_PRIVATE_NONSECURE     = 0x02000000,
+
 #ifdef EXYNOS4_ENHANCEMENTS
     /* SAMSUNG */
     GRALLOC_USAGE_PRIVATE_NONECACHE     = 0x00800000,
@@ -152,23 +161,12 @@ enum {
     GRALLOC_USAGE_HW_ION                = 0x02000000,
     GRALLOC_USAGE_YUV_ADDR              = 0x04000000,
     GRALLOC_USAGE_CAMERA                = 0x08000000,
+
     /* SEC Private usage , for Overlay path at HWC */
     GRALLOC_USAGE_HWC_HWOVERLAY         = 0x20000000,
 #endif
 
-#ifdef EXYNOS5_ENHANCEMENTS
-    /* buffer will be used by the HW IPs when sysmmu is off */
-    GRALLOC_USAGE_PHYSICALLY_LINEAR     = 0x01000000,
-
     GRALLOC_USAGE_GPU_BUFFER            = 0x00800000,
-    GRALLOC_USAGE_PRIVATE_NONSECURE     = 0x02000000,
-    GRALLOC_USAGE_INTERNAL_ONLY         = 0x10000000,
-    GRALLOC_USAGE_EXTERNAL_FLEXIBLE     = 0x20000000,
-    GRALLOC_USAGE_EXTERNAL_BLOCK        = 0x40000000,
-    GRALLOC_USAGE_EXTERNAL_ONLY         = 0x80000000,
-    GRALLOC_USAGE_EXTERNAL_VIRTUALFB    = 0x00400000,
-
-#endif
 };
 
 /*****************************************************************************/
@@ -417,11 +415,47 @@ typedef struct alloc_device_t {
 static inline int gralloc_open(const struct hw_module_t* module, 
         struct alloc_device_t** device) {
     return module->methods->open(module, 
+#ifdef __cplusplus
+            GRALLOC_HARDWARE_GPU0, reinterpret_cast<struct hw_device_t**>(device));
+#else
             GRALLOC_HARDWARE_GPU0, (struct hw_device_t**)device);
+#endif
 }
 
 static inline int gralloc_close(struct alloc_device_t* device) {
     return device->common.close(&device->common);
+}
+
+/**
+ * map_usage_to_memtrack should be called after allocating a gralloc buffer.
+ *
+ * @param usage - it is the flag used when alloc function is called.
+ *
+ * This function maps the gralloc usage flags to appropriate memtrack bucket.
+ * GrallocHAL implementers and users should make an additional ION_IOCTL_TAG
+ * call using the memtrack tag returned by this function. This will help the
+ * in-kernel memtack to categorize the memory allocated by different processes
+ * according to their usage.
+ *
+ */
+static inline const char* map_usage_to_memtrack(uint32_t usage) {
+    usage &= GRALLOC_USAGE_ALLOC_MASK;
+
+    if ((usage & GRALLOC_USAGE_HW_CAMERA_WRITE) != 0) {
+        return "camera";
+    } else if ((usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) != 0 ||
+            (usage & GRALLOC_USAGE_EXTERNAL_DISP) != 0) {
+        return "video";
+    } else if ((usage & GRALLOC_USAGE_HW_RENDER) != 0 ||
+            (usage & GRALLOC_USAGE_HW_TEXTURE) != 0) {
+        return "gl";
+    } else if ((usage & GRALLOC_USAGE_HW_CAMERA_READ) != 0) {
+        return "camera";
+    } else if ((usage & GRALLOC_USAGE_SW_READ_MASK) != 0 ||
+            (usage & GRALLOC_USAGE_SW_WRITE_MASK) != 0) {
+        return "cpu";
+    }
+    return "graphics";
 }
 
 __END_DECLS
