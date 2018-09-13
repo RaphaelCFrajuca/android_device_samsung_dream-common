@@ -9,7 +9,7 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 # Ramdisk
 PRODUCT_PACKAGES += \
-    fstab.samsungexynos8890 \
+    fstab.samsungexynos8895 \
     init.baseband.rc \
     init.bluetooth.rc \
     init.gps.rc \
@@ -17,10 +17,10 @@ PRODUCT_PACKAGES += \
     init.rilchip.rc \
     init.rilcommon.rc \
     init.samsung.rc \
-    init.samsungexynos8890.rc \
-    init.samsungexynos8890.usb.rc \
+    init.samsungexynos8895.rc \
+    init.samsungexynos8895.usb.rc \
     init.wifi.rc \
-    ueventd.samsungexynos8890.rc
+    ueventd.samsungexynos8895.rc
 
 # Permissions
 PRODUCT_COPY_FILES += \
