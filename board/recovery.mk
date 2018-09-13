@@ -14,7 +14,7 @@ TW_INCLUDE_NTFS_3G := true
 TW_EXCLUDE_SUPERSU := true
 TW_EXTRA_LANGUAGES := true
 TW_USE_NEW_MINADBD := true
-TARGET_RECOVERY_FSTAB := device/samsung/hero-common/rootdir/etc/recovery.fstab
+TARGET_RECOVERY_FSTAB := device/samsung/dream-common/rootdir/etc/recovery.fstab
 else
-TARGET_RECOVERY_FSTAB := device/samsung/hero-common/rootdir/etc/fstab.samsungexynos8895
+TARGET_RECOVERY_FSTAB := device/samsung/dream-common/rootdir/etc/fstab.samsungexynos8895
 endif
