@@ -24,7 +24,7 @@ TARGET_2ND_ARCH := arm
 TARGET_2ND_ARCH_VARIANT := armv7-a-neon
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := cortex-a53
+TARGET_2ND_CPU_VARIANT := cortex-a53.a57
 
 # Binder
 TARGET_USES_64_BIT_BINDER := true
@@ -40,7 +40,7 @@ ENABLE_CPUSETS := true
 EXTENDED_FONT_FOOTPRINT := true
 
 # Kernel
-TARGET_KERNEL_SOURCE := kernel/samsung/exynos8895
+TARGET_KERNEL_SOURCE := kernel/samsung/universal8895
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
